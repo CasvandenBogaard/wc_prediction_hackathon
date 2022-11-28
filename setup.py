@@ -1,4 +1,4 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
 setup(
     name='wc_predict',
@@ -7,5 +7,5 @@ setup(
     url='https://github.com/CasvandenBogaard/wc_prediction_hackathon',
     author='Cas van den Bogaard',
 
-    py_modules=['wc_predict'],
+    packages=find_packages()
 )
