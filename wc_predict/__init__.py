@@ -1,1 +1,1 @@
-from .main import load_data, Tournament, Group, Match, Bracket
+from .main import load_data, setup_tournament
