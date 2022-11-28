@@ -191,6 +191,15 @@ class Tournament:
             games = list(self.finals.values())
         return self._games_to_df(games)
 
+    def score_games(self, df):
+        records = df.to_records()
+        if self.stage == self.STAGE.GROUPS:
+            for game in records:
+                self.groups[game[0][0]].fill_score(*game)
+
+            for group in self.groups.values():
+                group.calculate_standings()
+
     def _games_to_df(self, games):
         records = [(game.id, *game.teams) for game in games]
         df = pd.DataFrame.from_records(records)
