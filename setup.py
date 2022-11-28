@@ -7,5 +7,7 @@ setup(
     url='https://github.com/CasvandenBogaard/wc_prediction_hackathon',
     author='Cas van den Bogaard',
 
-    packages=find_packages()
+    packages=find_packages(),
+    package_data={'': ['data/*.json', 'data/*.csv']},
+    include_package_data=True,
 )
