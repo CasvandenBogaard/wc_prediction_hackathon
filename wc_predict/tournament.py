@@ -88,6 +88,8 @@ class Group:
         else:
             st[t2]['points'] += 3
 
+    def fill_score(self, match_id, home_score, away_score):
+        self.games[match_id].fill_score(home_score, away_score)
 
     @property
     def group_order(self):
@@ -95,9 +97,6 @@ class Group:
 
     def __iter__(self):
         return iter(self.games.values())
-    
-    def fill_score(self, match_id, home_score, away_score):
-        self.games[match_id].fill_score(home_score, away_score)
 
     def __str__(self):
         return_string = "Standings in Group {}\n".format(self.group_id)
