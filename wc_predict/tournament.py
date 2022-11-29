@@ -121,28 +121,49 @@ class Tournament:
         self.semis = {}
         self.finals = {}
 
-    def fill_ro16(self):
+    @property
+    def winner(self):
+        final = self.finals.get('F1', None)
+        if final is None or not final.played:
+            return None
+        else:
+            return final.winner
+
+    def fill_next_stage(self):
+        if self.stage == self.STAGE.F:
+            return False
+        elif self.stage == self.STAGE.GROUPS:
+            self._fill_ro16()
+        elif self.stage == self.STAGE.RO16:
+            self._fill_quarters()
+        elif self.stage == self.STAGE.Q:
+            self._fill_semis()
+        elif self.stage == self.STAGE.S:
+            self._fill_finals()
+        return True
+        
+    def _fill_ro16(self):
         for game_id, (a, b) in self.bracket_format['RO16'].items():
             t1 = self.groups[a[0]].group_order[int(a[1])-1]
             t2 = self.groups[b[0]].group_order[int(b[1])-1]
             self.ro16[game_id] = Match(game_id, t1, t2)
         self.stage = self.STAGE.RO16
         
-    def fill_quarters(self):
+    def _fill_quarters(self):
         for game_id, (a, b) in self.bracket_format['Q'].items():
             t1 = self.ro16[a].winner
             t2 = self.ro16[b].winner
             self.quarters[game_id] = Match(game_id, t1, t2)
         self.stage = self.STAGE.Q
         
-    def fill_semis(self):
+    def _fill_semis(self):
         for game_id, (a, b) in self.bracket_format['S'].items():
             t1 = self.quarters[a].winner
             t2 = self.quarters[b].winner
             self.semis[game_id] = Match(game_id, t1, t2)
         self.stage = self.STAGE.S
         
-    def fill_finals(self):
+    def _fill_finals(self):
         for game_id, (a, b) in self.bracket_format['F'].items():
             t1 = self.semis[a].winner
             t2 = self.semis[b].winner
@@ -165,13 +186,25 @@ class Tournament:
         return self._games_to_df(games)
 
     def score_games(self, df):
-        records = df.to_records()
+        records = df[['home_goals', 'away_goals']].to_records()
         if self.stage == self.STAGE.GROUPS:
             for game in records:
                 self.groups[game[0][0]].fill_score(*game)
 
             for group in self.groups.values():
                 group.calculate_standings()
+        elif self.stage == self.STAGE.RO16:
+            for game in records:
+                self.ro16[game[0]].fill_score(game[1], game[2])
+        elif self.stage == self.STAGE.Q:
+            for game in records:
+                self.quarters[game[0]].fill_score(game[1], game[2])
+        elif self.stage == self.STAGE.S:
+            for game in records:
+                self.semis[game[0]].fill_score(game[1], game[2])
+        elif self.stage == self.STAGE.F:
+            for game in records:
+                self.finals[game[0]].fill_score(game[1], game[2])
 
     def _games_to_df(self, games):
         records = [(game.id, *game.teams) for game in games]
