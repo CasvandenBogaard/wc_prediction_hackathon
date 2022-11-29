@@ -19,9 +19,7 @@ class Match:
     @property
     def winner(self):
         if not self.played:
-            # Only for debugging purposes, otherwise throw error
-            # return None
-            return self.home
+            raise ValueError("Game not played yet.")
 
         if self.score[0] == self.score[1]:
             # Default to home team win in case of tie in knock-out phase
@@ -125,7 +123,7 @@ class Tournament:
     def winner(self):
         final = self.finals.get('F1', None)
         if final is None or not final.played:
-            return None
+            return ''
         else:
             return final.winner
 
@@ -212,3 +210,27 @@ class Tournament:
         df.columns = ['match_id', 'home_team', 'away_team']
         df = df.set_index('match_id')
         return df
+
+    def __str__(self):
+        return_string = ""
+        for group in self.groups.values():
+            return_string += str(group) + "\n"
+
+        return_string += "Round of 16:\n"
+        for match in self.ro16.values():
+            return_string += str(match) + '\n'
+
+        return_string += "\nQuarter finals:\n"
+        for match in self.quarters.values():
+            return_string += str(match) + '\n'
+
+        return_string += "\nSemi finals:\n"
+        for match in self.semis.values():
+            return_string += str(match) + '\n'
+
+        return_string += "\nFinal:\n"
+        for match in self.finals.values():
+            return_string += str(match) + '\n'
+
+        return_string += "\nWinner:" + self.winner
+        return return_string
