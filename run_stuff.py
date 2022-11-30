@@ -20,7 +20,14 @@ if __name__ == '__main__':
             df.loc[:, 'away_goals'] = numpy.random.randint(3, size=len(df))
             return df
 
+    class FloatRandomModel:
+
+        def predict(self, df):
+            df.loc[:, 'home_goals'] = numpy.random.random(size=len(df)) * 3
+            df.loc[:, 'away_goals'] = numpy.random.random(size=len(df)) * 3
+            return df
+
     runner = TournamentRunner(tourney)
-    runner.predict(RandomModel(), DummyModel())
+    runner.predict(RandomModel(), FloatRandomModel())
 
     print(tourney)
