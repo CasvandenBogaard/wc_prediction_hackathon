@@ -21,6 +21,6 @@ if __name__ == '__main__':
             return df
 
     runner = TournamentRunner(tourney)
-    runner.predict(RandomModel())
+    runner.predict(RandomModel(), DummyModel())
 
     print(tourney)

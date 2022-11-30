@@ -1,13 +1,15 @@
+import warnings
 from enum import Enum
 import pandas as pd
 
 
 class Match:
 
-    def __init__(self, match_id, home_team, away_team):
+    def __init__(self, match_id, home_team, away_team, can_tie=True):
         self.id = match_id
         self.home = home_team
         self.away = away_team
+        self.can_tie = can_tie
 
         self.score = None
         self.played = False
@@ -22,8 +24,11 @@ class Match:
             raise ValueError("Game not played yet.")
 
         if self.score[0] == self.score[1]:
-            # Default to home team win in case of tie in knock-out phase
-            return self.home
+            if self.can_tie:
+                return "Tie"
+            else:
+                # Default to home team win in case of tie in knock-out phase
+                return self.home
         elif self.score[0] > self.score[1]:
             return self.home
         else:
@@ -32,6 +37,8 @@ class Match:
     def fill_score(self, home_score, away_score):
         self.score = (home_score, away_score)
         self.played = True
+        if home_score == away_score and not self.can_tie:
+            warnings.warn("Knock-out game without winner ({}). Defaulting to home team as winner".format(self))
 
     def __str__(self):
         if not self.played:
@@ -144,28 +151,28 @@ class Tournament:
         for game_id, (a, b) in self.bracket_format['RO16'].items():
             t1 = self.groups[a[0]].group_order[int(a[1])-1]
             t2 = self.groups[b[0]].group_order[int(b[1])-1]
-            self.ro16[game_id] = Match(game_id, t1, t2)
+            self.ro16[game_id] = Match(game_id, t1, t2, can_tie=False)
         self.stage = self.STAGE.RO16
         
     def _fill_quarters(self):
         for game_id, (a, b) in self.bracket_format['Q'].items():
             t1 = self.ro16[a].winner
             t2 = self.ro16[b].winner
-            self.quarters[game_id] = Match(game_id, t1, t2)
+            self.quarters[game_id] = Match(game_id, t1, t2, can_tie=False)
         self.stage = self.STAGE.Q
         
     def _fill_semis(self):
         for game_id, (a, b) in self.bracket_format['S'].items():
             t1 = self.quarters[a].winner
             t2 = self.quarters[b].winner
-            self.semis[game_id] = Match(game_id, t1, t2)
+            self.semis[game_id] = Match(game_id, t1, t2, can_tie=False)
         self.stage = self.STAGE.S
         
     def _fill_finals(self):
         for game_id, (a, b) in self.bracket_format['F'].items():
             t1 = self.semis[a].winner
             t2 = self.semis[b].winner
-            self.finals[game_id] = Match(game_id, t1, t2)
+            self.finals[game_id] = Match(game_id, t1, t2, can_tie=False)
         self.stage = self.STAGE.F
 
     def get_games(self):

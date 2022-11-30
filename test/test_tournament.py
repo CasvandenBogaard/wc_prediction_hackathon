@@ -31,17 +31,27 @@ class TestMatch:
         assert match.winner == 'A'
         assert match2.winner == 'B'
     
-    def test_tied_match_has_tiebreak_winner(self):
+    def test_tied_groups_match_returns_tie(self):
         match = Match(1, 'A', 'B')
         match.fill_score(1, 1)
-        assert match.winner == 'A'
-    
+        assert match.winner == 'Tie'
+
+    @pytest.mark.filterwarnings("ignore:Knock-out game without winner")
+    def test_tied_ko_match_returns_home(self):
+        match = Match(1, 'A', 'B', can_tie=False)
+        match.fill_score(1, 1)
+        assert match.winner == 'A'    
+
+    def test_tied_ko_match_warns(self):
+        match = Match(1, 'A', 'B', can_tie=False)
+        with pytest.warns():
+            match.fill_score(1, 1)
+
     def test_not_played_raises_error_for_winner(self):
         match = Match(1, 'A', 'B')
         assert match.score is None
         with pytest.raises(ValueError):
             match.winner
-
 
 @pytest.fixture
 def group_a():
